@@ -77,19 +77,16 @@ def run_script_periodically(logger):
 def run_script(logger):
     logger.debug("running script..")
 
-    e = subprocess.run(
-        ["/home/dc/eg_daemon/my_script.bash"],
-        capture_output=False,
-        cwd=working_dir
-    )
-
-    if e.returncode != 0:
-        # Something went wrong with the script execution, can't really recover from this
-        logger.error(
-            f"{e}: returned non zero exit status")
-
-    logger.debug(f"return code = {e.returncode}")
-    return e.returncode
+    try:
+        output = subprocess.check_output(
+            ["/home/dc/eg_daemon/my_script.bash"],
+            cwd=working_dir
+        )
+        logger.debug(f"script output: {str(output)}")
+        return 0
+    except subprocess.CalledProcessError as err:
+        logger.debug(f"error running script: {err}")
+        return err.returncode
 
 
 FORMATTER = logging.Formatter(
